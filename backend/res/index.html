@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vtube Studio Web Replay</title>
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+        body {
+            user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+        .form-flex {
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+        }
+        .grid {
+            font-family: sans-serif;
+            display: grid;
+            grid-template-columns: auto 60%;
+            grid-gap: 10px;
+        }
+        .grid > div{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+        .grid input,
+        .grid button
+        {
+            font-size: 1em;
+        }
+        .grid .col-2{
+            grid-column: 2;
+        }
+        .submit {
+            justify-content: flex-end;
+        }
+        textarea {
+            font-family: monospace;
+            margin-top: 20px;
+            resize: none;
+            flex-grow: 10;
+            white-space: pre-wrap;
+            overflow: auto;
+        }
+        #model_path {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+<form id="main_form" class="form-flex">
+    <div class="grid">
+        <div><label for="vts_port">Vtube Studio API Port:</label></div><input id="vts_port" name="vts_port" type="number" value="8001"/>
+        <div><label for="serve_host">Web Server Host:</label></div><input id="serve_host" name="serve_host" type="text" value="127.0.0.1"/>
+        <div><label for="serve_port">Web Server Port:</label></div><input id="serve_port" name="serve_port" type="number" value="8080"/>
+        <div><label for="model_path">Models Path:</label></div><div><input type="text" id="model_path" name="model_path" readonly/><button id="browse" type="button">Browse</button></div>
+        <div class="col-2"><label><input id="ngrok" name="ngrok" type="checkbox">Expose with ngrok</label></div>
+        <div><label for="ngrok_token">Ngrok Token:</label></div><input id="ngrok_token" name="ngrok_token" type="text" placeholder="Optional" disabled/>
+        <div class="col-2 submit"><button id="connect" type="submit">Connect</button></div>
+    </div>
+    <!--suppress HtmlFormInputWithoutLabel -->
+    <textarea id="output" readonly></textarea>
+</form>
+</body>
+<script>
+    const ipc = require('electron').ipcRenderer;
+    const form = document.getElementById('main_form');
+    const logOutput = document.getElementById('output');
+    const connect = document.getElementById('connect');
+    const browse = document.getElementById('browse');
+    function saveSettings(){
+        let settings = {
+            vts_port: form['vts_port'].value,
+            serve_host: form['serve_host'].value,
+            serve_port: form['serve_port'].value,
+            model_path: form['model_path'].value,
+            ngrok: form['ngrok'].checked,
+            ngrok_token: form['ngrok_token'].value,
+        };
+        localStorage.setItem('settings', JSON.stringify(settings));
+        return settings;
+    }
+    function disableForm(disable){
+        if(disable){
+            form.querySelectorAll('input').forEach((input)=>{
+                input.setAttribute('disabled', '');
+            });
+            browse.setAttribute('disabled', '');
+        } else {
+            form.querySelectorAll('input').forEach((input)=>{
+                input.removeAttribute('disabled');
+            });
+            browse.removeAttribute('disabled');
+            form['ngrok'].dispatchEvent(new Event('change'));
+        }
+    }
+    browse.addEventListener('click', function (){
+        disableForm(true);
+        connect.setAttribute('disabled', '');
+        ipc.send('browse');
+    });
+    form['ngrok'].addEventListener('change', function (event){
+        if(event.target.checked){
+            form['ngrok_token'].removeAttribute('disabled');
+        } else {
+            form['ngrok_token'].setAttribute('disabled', '');
+        }
+    });
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        let settings = saveSettings();
+        ipc.send('connect', settings, localStorage.getItem('vts_token'));
+    });
+    ipc.on('done-browse', function (event, path) {
+        if(path !== null){
+            form['model_path'].value = path;
+        }
+        disableForm(false);
+        connect.removeAttribute('disabled');
+    });
+    ipc.on('write-log', function (event, text){
+        logOutput.value = `${logOutput.value}[${(new Date()).toISOString()}]${text}\n`;
+        logOutput.scrollTop = logOutput.scrollHeight;
+    });
+    ipc.on('disable-form', function (event, disable){
+        disableForm(disable);
+    });
+    ipc.on('disable-button', function (event, disable){
+        if(disable){
+            connect.setAttribute('disabled', '');
+        } else {
+            connect.removeAttribute('disabled');
+        }
+    });
+    ipc.on('rename-button', function (event, text){
+        connect.innerText = text;
+    });
+    ipc.on('store-vts-token', function (event, token){
+        localStorage.setItem('vts_token', token);
+    });
+    if (localStorage.getItem('settings') !== null) {
+        let serialized = localStorage.getItem('settings');
+        let settings = JSON.parse(serialized);
+        form['vts_port'].value = settings.vts_port;
+        form['serve_host'].value = settings.serve_host;
+        form['serve_port'].value = settings.serve_port;
+        form['model_path'].value = settings.model_path;
+        form['ngrok'].checked = settings.ngrok;
+        form['ngrok_token'].value = settings.ngrok_token;
+        form['ngrok'].dispatchEvent(new Event('change'));
+    }
+</script>
+</html>

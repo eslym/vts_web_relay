@@ -1,0 +1,3 @@
+[submodule "frontend/pixijs-live2d"]
+	path = frontend/pixijs-live2d
+	url = https://github.com/suppayami/pixijs-live2d.git

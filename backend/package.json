@@ -1,0 +1,47 @@
+{
+  "name": "vts_web_relay",
+  "version": "1.0.0",
+  "description": "Vtube Studio Web Relay",
+  "main": "lib/index.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "keywords": [
+    "vtubestudio"
+  ],
+  "author": "0nepeop1e",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/express-ws": "^3.0.1",
+    "@types/node": "^16.7.9",
+    "@types/ws": "^7.4.7",
+    "electron": "^13.2.3",
+    "electron-builder": "^22.11.7",
+    "gulp": "^4.0.2",
+    "gulp-clean": "^0.4.0",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-typescript": "^6.0.0-alpha.1"
+  },
+  "dependencies": {
+    "electron-alert": "^0.1.18",
+    "express": "^4.17.1",
+    "express-ws": "^5.0.2",
+    "ngrok": "^4.1.0",
+    "vtubestudio": "^1.3.0",
+    "ws": "^8.2.1"
+  },
+  "build": {
+    "appId": "com.eslym.vtsrelay",
+    "icon": "icon.ico",
+    "win": {
+      "target": "portable"
+    },
+    "files": [
+      "lib/**",
+      "res/**"
+    ]
+  }
+}

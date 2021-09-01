@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "allowJs": true,
+  },
+  "include": [
+    "src/**/*.ts",
+    "../shared/types.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
