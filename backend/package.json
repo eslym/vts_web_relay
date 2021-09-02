@@ -1,6 +1,6 @@
 {
   "name": "vts_web_relay",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Vtube Studio Web Relay",
   "main": "lib/index.js",
   "scripts": {

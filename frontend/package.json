@@ -1,6 +1,6 @@
 {
   "name": "vts_web_relay_frontend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Vtube Studio Web Relay Frontend",
   "main": "dist/app/index.js",
   "scripts": {
