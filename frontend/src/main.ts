@@ -13,7 +13,8 @@ const CubismFramework = live2dcubismframework.CubismFramework;
 const app = new PIXI.Application({
     resizeTo: window,
     transparent: true,
-});
+    backgroundAlpha: 0,
+} as any);
 
 const option = new Option();
 option.logFunction = (message: string) => console.log(message);
@@ -62,12 +63,34 @@ window.addEventListener('wheel', (event)=>{
     currentModel.scale.set(scale, scale);
 });
 
-app.renderer.on('resize', ()=>{
-    if(currentModel === null) {
-        return;
+let manager = new PIXI.InteractionManager(app.renderer, {autoPreventDefault: true});
+
+let dragging = false;
+let x = 0;
+let y = 0;
+
+manager.on('pointerdown', (e)=>{
+    if(!currentModel) return;
+    dragging = true;
+    x = e.data.global.x;
+    y = e.data.global.y;
+});
+
+manager.on('mousemove', (e)=>{
+    if(!currentModel) return;
+    if(dragging){
+        let deltaX = e.data.global.x - x;
+        let deltaY = e.data.global.y - y;
+        currentModel.x += deltaX;
+        currentModel.y += deltaY;
+        x = e.data.global.x;
+        y = e.data.global.y;
     }
-    currentModel.x = app.renderer.width / 2;
-    currentModel.y = app.renderer.height / 2;
+});
+
+manager.on('mouseup', (e)=>{
+    if(!currentModel) return;
+    dragging = false;
 });
 
 function loadResource (path): Promise<void>{
@@ -99,10 +122,13 @@ createWebsocket(location.toString()).then((ws)=>{
             }
             currentModelId = received.data.modelId;
             let path = `/models/${currentModelId}/${received.data.filename}`;
-            await loadResource(path);
+            if(app.loader.resources[path] === undefined){
+                await loadResource(path);
+            }
             currentModel = await Live2DModel.fromModel(path);
+            console.log(app.loader.resources);
             currentModel.setBreathing(false);
-            currentModel.getBounds();
+            currentModel.interactive = true;
 
             currentModel.x = app.renderer.width / 2;
             currentModel.y = app.renderer.height / 2;

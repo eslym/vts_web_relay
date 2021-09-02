@@ -10,15 +10,15 @@ gulp.task('env-prod', function (cb){
 });
 
 gulp.task('js', function () {
-    return gulp.src('src/web/main.ts')
+    return gulp.src('src/main.ts')
         .pipe(webpack(require('./webpack.config'), wp))
-        .pipe(gulp.dest('dist/web'));
+        .pipe(gulp.dest('dist'));
 });
 
 gulp.task('html', function (){
-    return gulp.src('src/web/index.hbs')
+    return gulp.src('src/index.hbs')
         .pipe(render({prod: process.env.NODE_ENV === 'production'}))
-        .pipe(gulp.dest('dist/web'));
+        .pipe(gulp.dest('dist'));
 });
 
 gulp.task('build', gulp.parallel('html', 'js'));
@@ -28,8 +28,8 @@ gulp.task('prod:js', gulp.series('env-prod', 'js'));
 gulp.task('prod:html', gulp.series('env-prod', 'html'));
 
 gulp.task('pack', function (){
-    return gulp.src(['dist/web/index.html', 'dist/web/*.js'])
-        .pipe(gulp.dest('../broadcaster/res/web'));
+    return gulp.src(['dist/index.html', 'dist/*.js'])
+        .pipe(gulp.dest('../backend/res/web'));
 });
 
 gulp.task('clean', function () {

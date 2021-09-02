@@ -5,7 +5,7 @@ const mode = process.env.NODE_ENV || 'development';
 
 module.exports = {
     mode: mode,
-    entry: './src/web/main.ts',
+    entry: './src/main.ts',
     module: {
         rules: [
             {
